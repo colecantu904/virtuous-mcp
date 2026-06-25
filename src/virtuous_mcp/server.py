@@ -181,6 +181,22 @@ async def _do_write(method: str, path: str, body: Any, confirm: bool) -> Any:
 # DISCOVERY TOOLS (safe — describe the full API surface)
 # =============================================================================
 
+# Supplemental request-body field hints for endpoints whose JSON body shape is
+# not obvious from the path/query params alone. The generated ``endpoints.py``
+# registry only records path + query params (and must not be hand-edited), so
+# known body schemas are documented here and merged into ``describe_endpoint``.
+# Keyed by (METHOD, path-template); values describe each expected body field.
+KNOWN_BODY_PARAMS: dict[tuple[str, str], list[dict[str, Any]]] = {
+    ("POST", "/api/Contact/Proximity"): [
+        {"name": "latitude", "type": "number", "required": True,
+         "description": "Latitude of the center point, e.g. 44.7631."},
+        {"name": "longitude", "type": "number", "required": True,
+         "description": "Longitude of the center point, e.g. -85.6206."},
+        {"name": "distanceInMiles", "type": "number", "required": True,
+         "description": "Search radius in miles. Must be between 1 and 100."},
+    ],
+}
+
 
 @mcp.tool
 def list_resources() -> dict[str, Any]:
@@ -261,7 +277,11 @@ def describe_endpoint(
                 f"No endpoint {method.upper()} {path}. Use list_endpoints to find the exact path template."
             )
         )
-    return {**e, "kind": "read" if e["read"] else "WRITE"}
+    out: dict[str, Any] = {**e, "kind": "read" if e["read"] else "WRITE"}
+    body_params = KNOWN_BODY_PARAMS.get((e["method"], e["path"]))
+    if body_params:
+        out["body_params"] = body_params
+    return out
 
 
 # =============================================================================
