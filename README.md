@@ -193,9 +193,10 @@ VIRTUOUS_API_KEY=your_key uv run virtuous-mcp
 
 The server speaks MCP over stdio.
 
-## Use with an MCP client (e.g. Cursor / Claude Desktop)
+## Use with an MCP client
 
-Add to your MCP client config:
+Every client below uses the **same** server entry — only the file it lives in
+(and the surrounding scope) changes:
 
 ```json
 {
@@ -208,6 +209,72 @@ Add to your MCP client config:
   }
 }
 ```
+
+### Cursor (global / all projects)
+
+Add it to your **global** Cursor config so it's available in every project:
+
+- **macOS / Linux:** `~/.cursor/mcp.json`
+- **Windows:** `%USERPROFILE%\.cursor\mcp.json`
+
+Create the file if it doesn't exist and paste the JSON block above (top-level
+`mcpServers` key). For a single project instead, use `.cursor/mcp.json` in that
+project's root — project config takes precedence over global if both define a
+server with the same name. Reload Cursor (or toggle the server in
+**Settings → Tools & Integrations → MCP**) after saving.
+
+### Claude Code (user scope / all projects)
+
+User scope makes the server available to you across **all** projects. Two ways:
+
+**CLI (recommended):**
+
+```bash
+claude mcp add virtuous-mcp \
+  --scope user \
+  --env VIRTUOUS_API_KEY=your_api_key_here \
+  -- uv run --directory /Users/cole.j.cantu/Programs/custom-mcp/virtuous-mcp virtuous-mcp
+```
+
+`--scope user` writes to `~/.claude.json` under the **top-level** `mcpServers`
+key. (Other scopes: `project` → `.mcp.json` in the repo root, shared with
+everyone who clones it; `local` (default) → your private entry for the current
+project only.) Everything after `--` is the command Claude Code runs to launch
+the server.
+
+**Edit `~/.claude.json` directly:**
+
+Add the server under the **top-level** `mcpServers` object (this is what makes
+it user-scoped — not nested under a specific project's entry):
+
+```json
+{
+  "mcpServers": {
+    "virtuous-mcp": {
+      "command": "uv",
+      "args": ["run", "--directory", "/Users/cole.j.cantu/Programs/custom-mcp/virtuous-mcp", "virtuous-mcp"],
+      "env": { "VIRTUOUS_API_KEY": "your_api_key_here" }
+    }
+  }
+}
+```
+
+`~/.claude.json` also holds other Claude Code settings, so merge into the
+existing `mcpServers` object rather than overwriting the file. Restart your
+Claude Code session afterward so it re-reads the config.
+
+### Claude Code scope reference
+
+| Scope | Where it's stored | Available to |
+| --- | --- | --- |
+| `local` (default) | `~/.claude.json`, under this project's entry | You, this project only |
+| `project` | `.mcp.json` in project root | Anyone who clones the repo |
+| `user` | `~/.claude.json`, top-level `mcpServers` | You, all projects |
+
+### Claude Desktop
+
+Same JSON block in Claude Desktop's `claude_desktop_config.json` (under
+`mcpServers`).
 
 ## Configuration
 
