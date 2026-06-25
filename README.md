@@ -141,11 +141,49 @@ page manually, or `query_all` to auto-paginate up to a `max_records` ceiling.
    Connectivity → Application Keys → Create an Application Key**.
 2. Copy `.env.example` to `.env` and set `VIRTUOUS_API_KEY`.
 
-This project uses [`uv`](https://docs.astral.sh/uv/). Install dependencies:
+### Install `uv`
+
+This project is managed with [`uv`](https://docs.astral.sh/uv/), a fast Python
+package and project manager. Install it once in your environment:
+
+```bash
+# macOS / Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+```bash
+# Windows (PowerShell)
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+`uv` is also available via other package managers if you prefer:
+
+```bash
+# Homebrew (macOS)
+brew install uv
+
+# pipx
+pipx install uv
+```
+
+After installing, restart your shell (or follow the printed instructions) so the
+`uv` command is on your `PATH`, then verify:
+
+```bash
+uv --version
+```
+
+`uv` manages the virtual environment and can even provision a compatible Python
+(3.10+) for you, so you don't need to set up Python separately.
+
+### Install dependencies
 
 ```bash
 uv sync
 ```
+
+This creates a virtual environment and installs the exact dependencies pinned in
+`uv.lock`.
 
 ## Run
 
